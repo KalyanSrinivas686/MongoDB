@@ -1,0 +1,30 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'mongodb-app'
+
+steps:
+- task: Docker@2
+  displayName: 'Build Docker Image'
+  inputs:
+    command: 'buildAndPush'
+    repository: '<your-docker-repo>/$(imageName)'
+    Dockerfile: '**/Dockerfile'
+    containerRegistry: '<your-container-registry>'
+    tags: 'latest'
+
+- task: Kubernetes@1
+  displayName: 'Deploy to Kubernetes'
+  inputs:
+    connectionType: 'Kubernetes Service Connection'
+    kubernetesServiceEndpoint: '<your-kubernetes-service-connection>'
+    namespace: 'default'
+    command: 'apply'
+    useConfigurationFile: true
+    configuration: |
+      deployment.yaml
+      service.yaml
